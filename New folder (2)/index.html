@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelMind - AI Travel Itinerary Personality Matcher</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>TravelMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <button class="btn-login" onclick="showLogin()">Login</button>
+                <button class="btn-signup" onclick="showSignup()">Sign Up</button>
+            </div>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Page -->
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Discover Your Perfect Trip with 
+                    <span class="gradient-text">AI-Powered Personality Matching</span>
+                </h1>
+                <p class="hero-description">
+                    Get personalized travel itineraries based on your unique personality, travel history, 
+                    and real-time local events. Let AI create your dream vacation.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn-primary" onclick="startJourney()">
+                        <i class="fas fa-rocket"></i>
+                        Start Your Personalized Trip Plan
+                    </button>
+                    <button class="btn-secondary" onclick="scrollToFeatures()">
+                        <i class="fas fa-play"></i>
+                        See How It Works
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">50K+</span>
+                        <span class="stat-label">Happy Travelers</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">200+</span>
+                        <span class="stat-label">Destinations</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">98%</span>
+                        <span class="stat-label">Satisfaction Rate</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="floating-card card-1">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Personalized Routes</span>
+                </div>
+                <div class="floating-card card-2">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Real-time Events</span>
+                </div>
+                <div class="floating-card card-3">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Personality Match</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Key Features</h2>
+                <p>Everything you need for the perfect personalized travel experience</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>Personality Test</h3>
+                    <p>Take our comprehensive quiz to determine your unique travel personality type</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>Travel History Analysis</h3>
+                    <p>Input your past travel experiences to help AI understand your preferences</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI-Powered Itineraries</h3>
+                    <p>Get personalized day-wise travel plans generated by advanced AI algorithms</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3>Real-Time Events</h3>
+                    <p>Discover local events and activities happening during your travel dates</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-cloud-sun"></i>
+                    </div>
+                    <h3>Weather Integration</h3>
+                    <p>Get weather forecasts and packing suggestions for your destination</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <h3>Save & Share</h3>
+                    <p>Download, save, and share your personalized itineraries with friends</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How It Works</h2>
+                <p>Simple steps to your perfect personalized travel experience</p>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Create Account & Take Personality Test</h3>
+                        <p>Sign up and complete our comprehensive personality assessment to understand your travel style</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Input Travel History & Preferences</h3>
+                        <p>Tell us about your past travels and what you loved or didn't enjoy</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Select Destination & Dates</h3>
+                        <p>Choose where you want to go and when you're planning to travel</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Get Your AI-Generated Itinerary</h3>
+                        <p>Receive a personalized day-wise plan with local events and weather tips</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to your TravelMind account</p>
+            </div>
+            <form class="auth-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary full-width">Sign In</button>
+                <p class="auth-switch">
+                    Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('signupModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Join TravelMind</h2>
+                <p>Create your account to start planning</p>
+            </div>
+            <form class="auth-form" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required>
+                </div>
+                <button type="submit" class="btn-primary full-width">Create Account</button>
+                <p class="auth-switch">
+                    Already have an account? <a href="#" onclick="switchToLogin()">Sign in</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container (Hidden initially) -->
+    <div id="appContainer" class="app-container" style="display: none;">
+        <!-- Personality Test -->
+        <div id="personalityTest" class="app-section">
+            <div class="container">
+                <div class="test-header">
+                    <h2>Discover Your Travel Personality</h2>
+                    <p>Answer these questions to help us understand your travel style</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">Question 1 of 10</span>
+                </div>
+                <div class="question-container" id="questionContainer">
+                    <!-- Questions will be dynamically loaded here -->
+                </div>
+                <div class="test-navigation">
+                    <button class="btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>Previous</button>
+                    <button class="btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Travel History -->
+        <div id="travelHistory" class="app-section" style="display: none;">
+            <div class="container">
+                <h2>Tell Us About Your Travel History</h2>
+                <div class="history-form">
+                    <div class="form-group">
+                        <label>How often do you travel?</label>
+                        <select id="travelFrequency">
+                            <option value="">Select frequency</option>
+                            <option value="rarely">Rarely (Once a year or less)</option>
+                            <option value="occasionally">Occasionally (2-3 times a year)</option>
+                            <option value="frequently">Frequently (4-6 times a year)</option>
+                            <option value="very-frequently">Very Frequently (More than 6 times a year)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>What type of accommodations do you prefer?</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" value="hotels"> Hotels</label>
+                            <label><input type="checkbox" value="hostels"> Hostels</label>
+                            <label><input type="checkbox" value="airbnb"> Airbnb/Vacation Rentals</label>
+                            <label><input type="checkbox" value="resorts"> Resorts</label>
+                            <label><input type="checkbox" value="camping"> Camping</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>What's your typical travel budget range?</label>
+                        <select id="budgetRange">
+                            <option value="">Select budget range</option>
+                            <option value="budget">Budget ($500-1500)</option>
+                            <option value="mid-range">Mid-range ($1500-3000)</option>
+                            <option value="luxury">Luxury ($3000-5000)</option>
+                            <option value="ultra-luxury">Ultra Luxury ($5000+)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Previous destinations you've loved:</label>
+                        <textarea id="lovedDestinations" placeholder="Tell us about places you've visited and enjoyed..."></textarea>
+                    </div>
+                    <button class="btn-primary" onclick="saveHistory()">Continue to Destination Selection</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Destination Selection -->
+        <div id="destinationSelection" class="app-section" style="display: none;">
+            <div class="container">
+                <h2>Where Would You Like to Go?</h2>
+                <div class="destination-form">
+                    <div class="form-group">
+                        <label>Destination</label>
+                        <input type="text" id="destination" placeholder="Enter city or country">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <input type="date" id="startDate">
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" id="endDate">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Travelers</label>
+                        <select id="travelers">
+                            <option value="1">Solo (1 person)</option>
+                            <option value="2">Couple (2 people)</option>
+                            <option value="3-4">Small Group (3-4 people)</option>
+                            <option value="5+">Large Group (5+ people)</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" onclick="generateItinerary()">Generate My Itinerary</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Itinerary Display -->
+        <div id="itineraryDisplay" class="app-section" style="display: none;">
+            <div class="container">
+                <div class="itinerary-header">
+                    <h2>Your Personalized Itinerary</h2>
+                    <div class="itinerary-actions">
+                        <button class="btn-secondary" onclick="downloadItinerary()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="btn-secondary" onclick="shareItinerary()">
+                            <i class="fas fa-share"></i> Share
+                        </button>
+                        <button class="btn-primary" onclick="saveItinerary()">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
+                </div>
+                <div id="itineraryContent" class="itinerary-content">
+                    <!-- Generated itinerary will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-brain"></i>
+                        <span>TravelMind</span>
+                    </div>
+                    <p>AI-powered personalized travel planning for the modern explorer.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Features</h4>
+                    <ul>
+                        <li><a href="#">Personality Test</a></li>
+                        <li><a href="#">AI Itineraries</a></li>
+                        <li><a href="#">Real-time Events</a></li>
+                        <li><a href="#">Weather Integration</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 TravelMind. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
