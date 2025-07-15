@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 
+
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -11,6 +12,10 @@
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+
   line-height: 1.5;
   font-weight: 400;
 
@@ -54,6 +59,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
 }
 
 a {
@@ -66,6 +72,12 @@ a:hover {
 }
 
 body {
+
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
 
 }
 
@@ -105,6 +117,7 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -186,3 +199,4 @@ button:focus-visible {
     @apply bg-background text-foreground;
   }
 } */
+}
