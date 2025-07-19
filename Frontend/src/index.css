@@ -1,14 +1,15 @@
+/* @import "tw-animate-css"; */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-
-
-@import "tw-animate-css";
-
 @custom-variant dark (&:is(.dark *));
 
 
+
+
+/* 
+/* 
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -198,5 +199,5 @@ button:focus-visible {
   body {
     @apply bg-background text-foreground;
   }
-} */
-}
+} */ */
+{}
