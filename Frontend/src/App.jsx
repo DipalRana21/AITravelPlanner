@@ -12,6 +12,8 @@ function App() {
         <Route path="/auth" element={<AuthPage />} />
       </Routes>
     </div>
+
+
   );
 }
 

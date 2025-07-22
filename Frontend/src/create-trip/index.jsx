@@ -1,9 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from "../components/ui/custom/Header.jsx";
 import { Input } from "@/components/ui/input";
 import { SelectBudgetOptions, SelectTravelsList } from '@/constants/options.jsx';
 import { Button } from "../components/ui/custom/button.jsx";
 import { motion } from "framer-motion";
+import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
+import {FcGoogle} from "react-icons/fc";
+import axios from "axios";
+// import { on } from 'events';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { useGoogleLogin } from '@react-oauth/google';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -12,6 +25,60 @@ const fadeInUp = {
 
 function TripForm() {
   const [formData, setFormData] = useState([]);
+
+  const [place, setPlace] = useState(false);
+
+  const [opendialog,setOpenDialog] =useState();
+
+  const handleInputChange = (name, value) => {
+
+    setFormData({
+      ...formData,
+      [name]: value
+    }
+
+    )
+  }
+
+  useEffect(() => {
+    console.log(formData);
+  }, [formData])
+
+  const login=useGoogleLogin({
+    onSuccess:(codeResp)=> getUserProfile(codeResp),
+    onError:(error)=>console.log(error)
+  })
+
+  const onGenerateTrip  = async()=>{
+
+    const user=localStorage.getItem('user');
+
+    if(!user)
+    {
+      setOpenDialog(true);
+      return;
+    }
+      if(formData?.noOfDays>14)
+      {
+        return;
+      }
+  }
+
+  // const getUserProfile=(tokenInfo)=>{
+  //   axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`,
+  //     {
+  //       headers:{
+  //         Authorization:`Bearer ${tokenInfo?.access_token}`,
+  //         Accept:'Application/json'
+  //       }
+  //     }
+  //   ).then((res)=>{
+  //     console.log(res)
+  //     localStorage.setItem('user',JSON.stringify(res.data))
+  //     onGenerateTrip();
+  //     setOpenDialog(false);
+  //   })
+  // }
 
   return (
     <div className="bg-dark-bg min-h-screen text-white font-exo">
@@ -48,6 +115,14 @@ function TripForm() {
           >
             <h2 className='text-xl font-semibold mb-2'>What is destination of choice?</h2>
             {/* GooglePlacesAutocomplete goes here */}
+
+            <GooglePlacesAutocomplete
+              apiKey={import.meta.env.VITE_GOOGLE_PLACE_API_KEY}
+              selectProps={{
+                place,
+                onChange: (v) => { setPlace(v); handleInputChange('location', v) }
+              }} />
+
           </motion.div>
 
           <motion.div
@@ -57,7 +132,8 @@ function TripForm() {
             variants={fadeInUp}
           >
             <h2 className='text-xl font-semibold mb-2'>How many days are you planning your trip?</h2>
-            <Input type="number" placeholder={'Ex.3'} />
+            <Input type="number" placeholder={'Ex.3'}
+              onChange={(e) => handleInputChange('noOfDays', e.target.value)} />
           </motion.div>
 
           <motion.div
@@ -71,8 +147,12 @@ function TripForm() {
               {SelectBudgetOptions.map((item, index) => (
                 <motion.div
                   key={index}
+                  onClick={() => handleInputChange('budget', item.title)}
                   variants={fadeInUp}
-                  className='p-5 border border-neon-pink rounded-xl hover:shadow-neon-pulse hover:scale-105 transition-all bg-[#1a1f2e]'
+                  className={`p-5 border rounded-xl transition-all bg-[#1a1f2e] 
+  ${formData?.budget === item.title
+                      ? 'border-neon-pink shadow-neon-pulse scale-105'
+                      : 'border-gray-600 hover:border-neon-cyan hover:shadow-neon-pulse hover:scale-105'}`}
                 >
                   <div className="text-neon-green text-3xl mb-2">{item.icon}</div>
                   <h2 className='font-bold text-lg text-white'>{item.title}</h2>
@@ -93,8 +173,13 @@ function TripForm() {
               {SelectTravelsList.map((item, index) => (
                 <motion.div
                   key={index}
+                  onClick={() => handleInputChange('traveler', item.people)}
                   variants={fadeInUp}
-                  className='p-5 border border-neon-cyan rounded-xl hover:shadow-neon-pulse hover:scale-105 transition-all bg-[#1a1f2e]'
+                  className={`p-5 border rounded-xl transition-all bg-[#1a1f2e] 
+                    ${formData?.traveler === item.people
+                      ? 'border-neon-cyan shadow-neon-pulse scale-105'
+                      : 'border-gray-600 hover:border-neon-pink hover:shadow-neon-pulse hover:scale-105'}`}
+
                 >
                   <div className="text-neon-pink text-3xl mb-2">{item.icon}</div>
                   <h2 className='font-bold text-lg text-white'>{item.title}</h2>
@@ -111,10 +196,13 @@ function TripForm() {
             viewport={{ once: true }}
             variants={fadeInUp}
           >
-            <Button className='my-10 bg-gradient-to-r from-neon-pink to-neon-green text-white px-6 py-2 rounded-full hover:shadow-neon-pulse transition-all'>
+            <Button className='my-10 bg-gradient-to-r from-neon-pink to-neon-green text-white px-6 py-2 rounded-full hover:shadow-neon-pulse transition-all'
+            onClick={onGenerateTrip}>
               Generate Trip
             </Button>
+
           </motion.div>
+
         </div>
       </div>
     </div>
