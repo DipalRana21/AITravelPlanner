@@ -5,7 +5,7 @@ import { SelectBudgetOptions, SelectTravelsList } from '@/constants/options.jsx'
 import { Button } from "../components/ui/custom/button.jsx";
 import { motion } from "framer-motion";
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
-import {FcGoogle} from "react-icons/fc";
+import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
 // import { on } from 'events';
 import {
@@ -28,7 +28,7 @@ function TripForm() {
 
   const [place, setPlace] = useState(false);
 
-  const [opendialog,setOpenDialog] =useState();
+  const [opendialog, setOpenDialog] = useState();
 
   const handleInputChange = (name, value) => {
 
@@ -44,24 +44,22 @@ function TripForm() {
     console.log(formData);
   }, [formData])
 
-  const login=useGoogleLogin({
-    onSuccess:(codeResp)=> getUserProfile(codeResp),
-    onError:(error)=>console.log(error)
+  const login = useGoogleLogin({
+    onSuccess: (codeResp) => getUserProfile(codeResp),
+    onError: (error) => console.log(error)
   })
 
-  const onGenerateTrip  = async()=>{
+  const onGenerateTrip = async () => {
 
-    const user=localStorage.getItem('user');
+    const user = localStorage.getItem('user');
 
-    if(!user)
-    {
+    if (!user) {
       setOpenDialog(true);
       return;
     }
-      if(formData?.noOfDays>14)
-      {
-        return;
-      }
+    if (formData?.noOfDays > 14) {
+      return;
+    }
   }
 
   // const getUserProfile=(tokenInfo)=>{
@@ -81,7 +79,8 @@ function TripForm() {
   // }
 
   return (
-    <div className="bg-dark-bg min-h-screen text-white font-exo">
+    <div className="bg-dark-bg dark:bg-white text-white dark:text-black min-h-screen">
+
       <Header />
       <div className='sm:px-10 md:px-32 lg:px-56 xl:px-10 px-5 mt-10'>
 
@@ -119,9 +118,52 @@ function TripForm() {
             <GooglePlacesAutocomplete
               apiKey={import.meta.env.VITE_GOOGLE_PLACE_API_KEY}
               selectProps={{
-                place,
-                onChange: (v) => { setPlace(v); handleInputChange('location', v) }
-              }} />
+                value: place,
+                onChange: (v) => {
+                  setPlace(v);
+                  handleInputChange('location', v);
+                },
+                classNamePrefix: "google-places",
+                styles: {
+                  control: (base) => ({
+                    ...base,
+                    backgroundColor: "#000",
+                    borderColor: "#2dd4bf", // neon cyan
+                    color: "#67e8f9",
+                    borderRadius: "0.375rem",
+                    padding: "0.25rem",
+                    fontSize: "1rem",
+                    boxShadow: "0 0 5px #0ff",
+                    transition: "0.3s",
+                  }),
+                  input: (base) => ({
+                    ...base,
+                    color: "#67e8f9",
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    color: "#67e8f9",
+                  }),
+                  menu: (base) => ({
+                    ...base,
+                    backgroundColor: "#0f172a",
+                    borderRadius: "0.5rem",
+                    marginTop: "4px",
+                    padding: "0.25rem 0",
+                  }),
+                  option: (base, state) => ({
+                    ...base,
+                    backgroundColor: state.isFocused ? "#2dd4bf" : "#0f172a",
+                    color: state.isFocused ? "#0f172a" : "#67e8f9",
+                    padding: "0.75rem 1rem",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }),
+                },
+              }}
+            />
+
+
 
           </motion.div>
 
@@ -149,10 +191,12 @@ function TripForm() {
                   key={index}
                   onClick={() => handleInputChange('budget', item.title)}
                   variants={fadeInUp}
-                  className={`p-5 border rounded-xl transition-all bg-[#1a1f2e] 
+                  className={`p-5 border rounded-xl transition-all
   ${formData?.budget === item.title
                       ? 'border-neon-pink shadow-neon-pulse scale-105'
-                      : 'border-gray-600 hover:border-neon-cyan hover:shadow-neon-pulse hover:scale-105'}`}
+                      : 'border-gray-600 dark:border-gray-300 hover:border-neon-cyan hover:shadow-neon-pulse hover:scale-105'}
+  bg-[#1a1f2e] dark:bg-gray-100 dark:text-black`}
+
                 >
                   <div className="text-neon-green text-3xl mb-2">{item.icon}</div>
                   <h2 className='font-bold text-lg text-white'>{item.title}</h2>
@@ -197,7 +241,7 @@ function TripForm() {
             variants={fadeInUp}
           >
             <Button className='my-10 bg-gradient-to-r from-neon-pink to-neon-green text-white px-6 py-2 rounded-full hover:shadow-neon-pulse transition-all'
-            onClick={onGenerateTrip}>
+              onClick={onGenerateTrip}>
               Generate Trip
             </Button>
 

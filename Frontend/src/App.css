@@ -57,3 +57,28 @@
 body {
   @apply font-exo;
 }
+html {
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+body {
+  @apply font-exo bg-white text-black dark:bg-[#111827] dark:text-white;
+}
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.glitch {
+  animation: flicker 1s infinite;
+  text-shadow: 0 0 2px #0ff, 0 0 10px #0ff, 0 0 2px #0ff;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-in-out forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
