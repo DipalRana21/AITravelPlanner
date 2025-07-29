@@ -6,6 +6,7 @@ import HowItWorks from './components/ui/custom/HowItWorks';
 export default function Home() {
   return (
     <>
+      
       <Hero />
       <HowItWorks />
       
