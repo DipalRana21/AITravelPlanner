@@ -1,0 +1,5 @@
+/* src/components/AnimatedLogo.css */
+.glow {
+  filter: drop-shadow(0 0 8px #ff55dd);
+  transition: filter 0.3s ease-in-out;
+}
