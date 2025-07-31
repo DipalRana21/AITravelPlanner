@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import Header from "../components/ui/custom/Header.jsx";
 import { Input } from "@/components/ui/input";
-import { SelectBudgetOptions, SelectTravelsList } from '@/constants/options.jsx';
-import { Button } from "../components/ui/custom/button.jsx";
+import { AI_PROMPT, SelectBudgetOptions, SelectTravelsList } from '@/constants/options.jsx';
+import { Button } from "../components/ui/custom/button";
 import { motion } from "framer-motion";
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import {FcGoogle} from "react-icons/fc";
 import axios from "axios";
-// import { on } from 'events';
+import { toast } from 'sonner';
+
 import {
   Dialog,
   DialogContent,
@@ -17,6 +18,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useGoogleLogin } from '@react-oauth/google';
+import { sendPromptToGemini } from '@/service/AIModel.jsx';
+
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -24,7 +27,12 @@ const fadeInUp = {
 };
 
 function TripForm() {
-  const [formData, setFormData] = useState([]);
+  const [formData, setFormData] = useState({
+  location: null,
+  noOfDays: '',
+  budget: '',
+  traveler: '',
+});
 
   const [place, setPlace] = useState(false);
 
@@ -44,41 +52,72 @@ function TripForm() {
     console.log(formData);
   }, [formData])
 
+
+
+
   const login=useGoogleLogin({
     onSuccess:(codeResp)=> getUserProfile(codeResp),
     onError:(error)=>console.log(error)
   })
 
-  const onGenerateTrip  = async()=>{
+  const onGenerateTrip= async()=>{
 
-    const user=localStorage.getItem('user');
-
-    if(!user)
-    {
-      setOpenDialog(true);
+     console.log("Generate Trip Clicked ✅");
+ 
+    
+  try {
+ 
+    if (!formData?.location || !formData.location?.label) {
+      toast("❌ Missing location");
       return;
     }
-      if(formData?.noOfDays>14)
-      {
-        return;
-      }
+
+    if (!formData?.noOfDays?.toString().trim() ) {
+      toast("❌ Missing number of days");
+      return;
+    }
+
+    
+    if (parseInt(formData?.noOfDays) > 14) {
+      toast("❌ Please enter travel days below 15");
+      return;
+    }
+
+    if (!formData?.budget || !formData?.budget?.toString().trim()) {
+      toast("❌ Missing budget");
+      return;
+    }
+
+    if (!formData?.traveler || !formData?.traveler?.toString().trim()) {
+      toast("❌ Missing traveler");
+      return;
+    }
+
+    toast("✅ Trip input looks good!");
+  } catch (err) {
+    console.error("🔥 Error in onGenerateTrip:", err);
+    toast("Something went wrong!");
   }
 
-  // const getUserProfile=(tokenInfo)=>{
-  //   axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`,
-  //     {
-  //       headers:{
-  //         Authorization:`Bearer ${tokenInfo?.access_token}`,
-  //         Accept:'Application/json'
-  //       }
-  //     }
-  //   ).then((res)=>{
-  //     console.log(res)
-  //     localStorage.setItem('user',JSON.stringify(res.data))
-  //     onGenerateTrip();
-  //     setOpenDialog(false);
-  //   })
-  // }
+
+  const FINAL_PROMPT=AI_PROMPT
+  .replace('{location}', formData?.location?.label)
+  .replace('{totalDays}', formData?.noOfDays)
+  .replace('{traveler}', formData?.traveler)
+  .replace('{budget}',formData?.budget)
+   .replace('{totalDays}', formData?.noOfDays)
+
+    console.log(FINAL_PROMPT)
+
+const result = await sendPromptToGemini(FINAL_PROMPT);
+if (result) {
+  console.log("🧾 Final Travel Plan:\n", result);
+  // You can optionally parse and display this in UI
+}
+
+  }
+
+ 
 
   return (
     <div className="bg-dark-bg min-h-screen text-white font-exo">
