@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import GoogleAuthButton from '../components/GoogleAuthButton.jsx'; // adjust the path as needed
 import { useGoogleLogin } from '@react-oauth/google';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '@/firebase.js';
 
 
 export default function SignUpPage() {
@@ -15,55 +17,90 @@ export default function SignUpPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.post(
-        'http://localhost:5000/api/users/signup',
-        formData,
-        { withCredentials: true }
-      );
-      navigate('/'); // Redirect after successful signup
-    } catch (error) {
-       console.error("Signup error:", error);
-      alert(error.response?.data?.message || 'Signup failed');
-    }
+//     try {
+//    await axios.post(
+//   'http://localhost:5000/api/users/signup',
+//   formData,
+//   { withCredentials: true }
+// ).then((res) => {
+//   localStorage.setItem("user", JSON.stringify(res.data.user)); // ✅ Save full user object
+//   navigate('/');
+// });
+
+
+//     } catch (error) {
+//        console.error("Signup error:", error);
+//       alert(error.response?.data?.message || 'Signup failed');
+//     }
+
+ try {
+    const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+    const user = userCredential.user;
+
+    // await updateProfile(user, { displayName: formData.name });
+
+    localStorage.setItem("user", JSON.stringify({
+      uid: user.uid,
+      email: user.email,
+      // displayName: user.displayName,
+    }));
+    navigate('/');
+  } catch (error) {
+    console.error("Firebase signup failed:", error);
+    alert(error.message);
+  }
   };
 
 
-const handleGoogleLogin = useGoogleLogin({
-  onSuccess: async (tokenResponse) => {
-    try {
+// const handleGoogleLogin = useGoogleLogin({
+//   onSuccess: async (tokenResponse) => {
+//     try {
   
-      const googleRes = await axios.get(
-        `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenResponse.access_token}`,
-        {
-          headers: {
-            Authorization: `Bearer ${tokenResponse.access_token}`,
-            Accept: 'application/json',
-          },
-        }
-      );
+//       const googleRes = await axios.get(
+//         `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenResponse.access_token}`,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${tokenResponse.access_token}`,
+//             Accept: 'application/json',
+//           },
+//         }
+//       );
 
-      const { email, name, id: googleId } = googleRes.data;
+//       const { email, name, id: googleId } = googleRes.data;
 
-      // Send to your backend to register/login the user
-      const backendRes = await axios.post(
-        'http://localhost:5000/api/users/google', 
-        { email, name, googleId },
-        { withCredentials: true } 
-      );
+//       // Send to your backend to register/login the user
+//       const backendRes = await axios.post(
+//         'http://localhost:5000/api/users/google', 
+//         { email, name, googleId },
+//         { withCredentials: true } 
+//       );
 
-      // Save backend returned user to localStorage (optional)
-      // localStorage.setItem('user', JSON.stringify(backendRes.data.user));
+//       localStorage.setItem("userId", backendRes.data.user);
+//       navigate('/');
+//     } catch (error) {
+//       console.error('Google login failed', error);
+//     }
+//   },
+//   onError: (error) => console.log('Google OAuth Error', error),
+// });
 
-      // Redirect to dashboard/home
-      navigate('/');
-    } catch (error) {
-      console.error('Google login failed', error);
-    }
-  },
-  onError: (error) => console.log('Google OAuth Error', error),
-});
 
+const handleGoogleLogin = async () => {
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    localStorage.setItem("user", JSON.stringify({
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+    }));
+    navigate('/');
+  } catch (error) {
+    console.error("Firebase Google login failed:", error);
+    alert(error.message);
+  }
+};
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-dark-bg text-white">

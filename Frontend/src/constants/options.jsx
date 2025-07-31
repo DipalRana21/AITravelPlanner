@@ -48,4 +48,6 @@ export const SelectBudgetOptions = [
 
 export const AI_PROMPT = "Generate Travel Plan for Location: {location}, for {totalDays} Days for {traveler} with a {budget} budget, give me Hotels options list with HotelName, Hotel address, Price, hotel image url, geo coordinates, rating , descriptions and suggest itinerary with placeName, place Details, Place Image Url, Geocoordinates, ticket pricing, rating, Time travel each of the location for {totalDays} days with each day plan with best time to visit in JSON format.";
 
-       
+
+    
+// export const AI_PROMPT ="Generate Travel Plan for Location: {location}, for {totalDays} Days for {traveler} with a {budget} budget. Give me a JSON response only (no explanation or markdown) that includes:1. Hotels list: each with hotelName, hotelAddress, price, hotelImageUrl, geoCoordinates (latitude, longitude), rating, and description.2. Itinerary plan for each day (total {totalDays} days): each day should include day number, placeName, placeDetails, placeImageUrl, geoCoordinates (latitude, longitude), ticketPricing, rating, timeTravel, and bestTimeToVisit.Return the response as strict valid JSON (all property names in **double quotes**, no markdown, no extra commentary, no line breaks in strings). JSON only."

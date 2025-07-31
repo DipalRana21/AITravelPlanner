@@ -8,6 +8,7 @@ import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
 import { toast } from 'sonner';
+import { AiOutlineLoading3Quarters } from "react-icons/ai"
 
 import {
   Dialog,
@@ -18,7 +19,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useGoogleLogin } from '@react-oauth/google';
-import { sendPromptToGemini } from '@/service/AIModel.jsx';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '@/firebase.js';
 
 
 const fadeInUp = {
@@ -38,6 +40,7 @@ function TripForm() {
 
   const [opendialog, setOpenDialog] = useState();
 
+  const [loading, setLoading] = useState(false);
   const handleInputChange = (name, value) => {
 
     setFormData({
@@ -59,238 +62,334 @@ function TripForm() {
     onError: (error) => console.log(error)
   })
 
+  // const onGenerateTrip = async () => {
+
+  //   console.log("Generate Trip Clicked ✅");
+
+  //   const userId = localStorage.getItem("userId");
+
+  //   try {
+
+  //     if (!formData?.location || !formData.location?.label) {
+  //       toast("❌ Missing location");
+  //       return;
+  //     }
+
+  //     if (!formData?.noOfDays?.toString().trim()) {
+  //       toast("❌ Missing number of days");
+  //       return;
+  //     }
+
+
+  //     if (parseInt(formData?.noOfDays) > 14) {
+  //       toast("❌ Please enter travel days below 15");
+  //       return;
+  //     }
+
+  //     if (!formData?.budget || !formData?.budget?.toString().trim()) {
+  //       toast("❌ Missing budget");
+  //       return;
+  //     }
+
+  //     if (!formData?.traveler || !formData?.traveler?.toString().trim()) {
+  //       toast("❌ Missing traveler");
+  //       return;
+  //     }
+
+  //     toast("✅ Ready to go!");
+  //   } catch (err) {
+  //     console.error("🔥 Error in onGenerateTrip:", err);
+  //     toast("Something went wrong!");
+
+  //   }
+
+
+  //   setLoading(true);
+
+  //   const FINAL_PROMPT = AI_PROMPT
+  //     .replace('{location}', formData?.location?.label)
+  //     .replace('{totalDays}', formData?.noOfDays)
+  //     .replace('{traveler}', formData?.traveler)
+  //     .replace('{budget}', formData?.budget)
+  //     .replace('{totalDays}', formData?.noOfDays)
+
+  //   console.log(FINAL_PROMPT)
+
+  //   const result = await sendPromptToGemini(FINAL_PROMPT, userId);
+  //   if (result) {
+  //     console.log("🧾 Final Travel Plan:\n", result);
+  //     // You can optionally parse and display this in UI
+  //   }
+
+  //   setLoading(false);
+  //   SaveAITrip(result)
+
+  // }
+
   const onGenerateTrip = async () => {
+  console.log("Generate Trip Clicked ✅");
+  setLoading(true);
 
-    console.log("Generate Trip Clicked ✅");
+  const FINAL_PROMPT = AI_PROMPT
+    .replace('{location}', formData?.location?.label)
+    .replace('{totalDays}', formData?.noOfDays)
+    .replace('{traveler}', formData?.traveler)
+    .replace('{budget}', formData?.budget)
+    .replace('{totalDays}', formData?.noOfDays);
 
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${import.meta.env.VITE_GOOGLE_GEMINI_API_KEY}`;
+    const payload = {
+      contents: [{ role: "user", parts: [{ text: FINAL_PROMPT }] }]
+    };
 
-    try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      if (!formData?.location || !formData.location?.label) {
-        toast("❌ Missing location");
-        return;
-      }
+    const result = await response.json(); 
+    const resultText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-      if (!formData?.noOfDays?.toString().trim()) {
-        toast("❌ Missing number of days");
-        return;
-      }
+    console.log("🧠 Gemini raw result:\n", resultText);
 
-
-      if (parseInt(formData?.noOfDays) > 14) {
-        toast("❌ Please enter travel days below 15");
-        return;
-      }
-
-      if (!formData?.budget || !formData?.budget?.toString().trim()) {
-        toast("❌ Missing budget");
-        return;
-      }
-
-      if (!formData?.traveler || !formData?.traveler?.toString().trim()) {
-        toast("❌ Missing traveler");
-        return;
-      }
-
-      toast("✅ Trip input looks good!");
-    } catch (err) {
-      console.error("🔥 Error in onGenerateTrip:", err);
-      toast("Something went wrong!");
-
+    if (resultText) {
+      SaveAITrip(resultText);
+    } else {
+      console.error("❌ No result from Gemini");
     }
 
-      const FINAL_PROMPT = AI_PROMPT
-        .replace('{location}', formData?.location?.label)
-        .replace('{totalDays}', formData?.noOfDays)
-        .replace('{traveler}', formData?.traveler)
-        .replace('{budget}', formData?.budget)
-        .replace('{totalDays}', formData?.noOfDays)
-
-      console.log(FINAL_PROMPT)
-
-      const result = await sendPromptToGemini(FINAL_PROMPT);
-      if (result) {
-        console.log("🧾 Final Travel Plan:\n", result);
-        // You can optionally parse and display this in UI
-      }
-
-    }
-
-
-
-    return (
-      <div className="bg-dark-bg dark:bg-white text-white dark:text-black min-h-screen">
-
-        <Header />
-        <div className='sm:px-10 md:px-32 lg:px-56 xl:px-10 px-5 mt-10'>
-
-          <motion.h2
-            className='font-bold text-3xl text-neon-pink'
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            variants={fadeInUp}
-          >
-            Tell us your travel preference 🏕️🌴
-          </motion.h2>
-
-          <motion.p
-            className='mt-3 text-neon-cyan text-xl'
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            variants={fadeInUp}
-          >
-            Just provide some basic information and our trip planner will generate a customized itinerary based on your preference
-          </motion.p>
-
-          <div className='mt-16 flex flex-col gap-8'>
-
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-            >
-              <h2 className='text-xl font-semibold mb-2'>What is destination of choice?</h2>
-              {/* GooglePlacesAutocomplete goes here */}
-
-              <GooglePlacesAutocomplete
-                apiKey={import.meta.env.VITE_GOOGLE_PLACE_API_KEY}
-                selectProps={{
-                  value: place,
-                  onChange: (v) => {
-                    setPlace(v);
-                    handleInputChange('location', v);
-                  },
-                  classNamePrefix: "google-places",
-                  styles: {
-                    control: (base) => ({
-                      ...base,
-                      backgroundColor: "#000",
-                      borderColor: "#2dd4bf", // neon cyan
-                      color: "#67e8f9",
-                      borderRadius: "0.375rem",
-                      padding: "0.25rem",
-                      fontSize: "1rem",
-                      boxShadow: "0 0 5px #0ff",
-                      transition: "0.3s",
-                    }),
-                    input: (base) => ({
-                      ...base,
-                      color: "#67e8f9",
-                    }),
-                    singleValue: (base) => ({
-                      ...base,
-                      color: "#67e8f9",
-                    }),
-                    menu: (base) => ({
-                      ...base,
-                      backgroundColor: "#0f172a",
-                      borderRadius: "0.5rem",
-                      marginTop: "4px",
-                      padding: "0.25rem 0",
-                    }),
-                    option: (base, state) => ({
-                      ...base,
-                      backgroundColor: state.isFocused ? "#2dd4bf" : "#0f172a",
-                      color: state.isFocused ? "#0f172a" : "#67e8f9",
-                      padding: "0.75rem 1rem",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                    }),
-                  },
-                }}
-              />
-
-
-
-            </motion.div>
-
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-            >
-              <h2 className='text-xl font-semibold mb-2'>How many days are you planning your trip?</h2>
-              <Input type="number" placeholder={'Ex.3'}
-                onChange={(e) => handleInputChange('noOfDays', e.target.value)} />
-            </motion.div>
-
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-            >
-              <h2 className='text-xl font-semibold mb-4'>What is your Budget for the trip?</h2>
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
-                {SelectBudgetOptions.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    onClick={() => handleInputChange('budget', item.title)}
-                    variants={fadeInUp}
-                    className={`p-5 border rounded-xl transition-all
-  ${formData?.budget === item.title
-                        ? 'border-neon-pink shadow-neon-pulse scale-105'
-                        : 'border-gray-600 dark:border-gray-300 hover:border-neon-cyan hover:shadow-neon-pulse hover:scale-105'}
-  bg-[#1a1f2e] dark:bg-gray-100 dark:text-black`}
-
-                  >
-                    <div className="text-neon-green text-3xl mb-2">{item.icon}</div>
-                    <h2 className='font-bold text-lg text-white'>{item.title}</h2>
-                    <p className='text-gray-400'>{item.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-            >
-              <h2 className='text-xl font-semibold my-4'>Who do you plan to travel with on your next adventure?</h2>
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
-                {SelectTravelsList.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    onClick={() => handleInputChange('traveler', item.people)}
-                    variants={fadeInUp}
-                    className={`p-5 border rounded-xl transition-all bg-[#1a1f2e] 
-                    ${formData?.traveler === item.people
-                        ? 'border-neon-cyan shadow-neon-pulse scale-105'
-                        : 'border-gray-600 hover:border-neon-pink hover:shadow-neon-pulse hover:scale-105'}`}
-
-                  >
-                    <div className="text-neon-pink text-3xl mb-2">{item.icon}</div>
-                    <h2 className='font-bold text-lg text-white'>{item.title}</h2>
-                    <p className='text-gray-400'>{item.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div
-              className='text-right'
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-            >
-              <Button className='my-10 bg-gradient-to-r from-neon-pink to-neon-green text-white px-6 py-2 rounded-full hover:shadow-neon-pulse transition-all'
-                onClick={onGenerateTrip}>
-                Generate Trip
-              </Button>
-
-            </motion.div>
-
-          </div>
-        </div>
-      </div>
-    )
+  } catch (err) {
+    console.error("❌ Gemini fetch failed:", err);
   }
 
-  export default TripForm;
+  setLoading(false);
+};
+
+
+const SaveAITrip = async (TripData) => {
+  setLoading(true);
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || !user.email) {
+    console.error("User not found in localStorage");
+    setLoading(false);
+    return;
+  }
+
+  const docId = Date.now().toString();
+
+  let parsedTrip;
+  try {
+    // Remove markdown if any
+    TripData = TripData.trim();
+    if (TripData.startsWith("```json") || TripData.startsWith("```")) {
+      TripData = TripData.replace(/```(?:json)?/, "").replace(/```$/, "").trim();
+    }
+
+    // Fix unquoted keys using regex (only if needed)
+    const safeJSON = TripData.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+
+    parsedTrip = JSON.parse(safeJSON);
+  } catch (err) {
+    console.error("❌ JSON Parse Error:", err.message);
+    setLoading(false);
+    return;
+  }
+
+  await setDoc(doc(db, "Trips", docId), {
+    userChoice: formData,
+    tripData: parsedTrip,
+    userEmail: user.email,
+    id: docId,
+    createdAt: new Date(),
+  });
+
+  console.log("✅ Trip saved to Firebase successfully!");
+  setLoading(false);
+};
+
+
+  return (
+    <div className="bg-dark-bg dark:bg-white text-white dark:text-black min-h-screen">
+
+      <Header />
+      <div className='sm:px-10 md:px-32 lg:px-56 xl:px-10 px-5 mt-10'>
+
+        <motion.h2
+          className='font-bold text-3xl text-neon-pink'
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+        >
+          Tell us your travel preference 🏕️🌴
+        </motion.h2>
+
+        <motion.p
+          className='mt-3 text-neon-cyan text-xl'
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+        >
+          Just provide some basic information and our trip planner will generate a customized itinerary based on your preference
+        </motion.p>
+
+        <div className='mt-16 flex flex-col gap-8'>
+
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+          >
+            <h2 className='text-xl font-semibold mb-2'>What is destination of choice?</h2>
+            {/* GooglePlacesAutocomplete goes here */}
+
+            <GooglePlacesAutocomplete
+              apiKey={import.meta.env.VITE_GOOGLE_PLACE_API_KEY}
+              selectProps={{
+                value: place,
+                onChange: (v) => {
+                  setPlace(v);
+                  handleInputChange('location', v);
+                },
+                classNamePrefix: "google-places",
+                styles: {
+                  control: (base) => ({
+                    ...base,
+                    backgroundColor: "#000",
+                    borderColor: "#2dd4bf", // neon cyan
+                    color: "#67e8f9",
+                    borderRadius: "0.375rem",
+                    padding: "0.25rem",
+                    fontSize: "1rem",
+                    boxShadow: "0 0 5px #0ff",
+                    transition: "0.3s",
+                  }),
+                  input: (base) => ({
+                    ...base,
+                    color: "#67e8f9",
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    color: "#67e8f9",
+                  }),
+                  menu: (base) => ({
+                    ...base,
+                    backgroundColor: "#0f172a",
+                    borderRadius: "0.5rem",
+                    marginTop: "4px",
+                    padding: "0.25rem 0",
+                  }),
+                  option: (base, state) => ({
+                    ...base,
+                    backgroundColor: state.isFocused ? "#2dd4bf" : "#0f172a",
+                    color: state.isFocused ? "#0f172a" : "#67e8f9",
+                    padding: "0.75rem 1rem",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }),
+                },
+              }}
+            />
+
+
+
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+          >
+            <h2 className='text-xl font-semibold mb-2'>How many days are you planning your trip?</h2>
+            <Input type="number" placeholder={'Ex.3'}
+              onChange={(e) => handleInputChange('noOfDays', e.target.value)} />
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+          >
+            <h2 className='text-xl font-semibold mb-4'>What is your Budget for the trip?</h2>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
+              {SelectBudgetOptions.map((item, index) => (
+                <motion.div
+                  key={index}
+                  onClick={() => handleInputChange('budget', item.title)}
+                  variants={fadeInUp}
+                  className={`p-5 border rounded-xl transition-all
+  ${formData?.budget === item.title
+                      ? 'border-neon-pink shadow-neon-pulse scale-105'
+                      : 'border-gray-600 dark:border-gray-300 hover:border-neon-cyan hover:shadow-neon-pulse hover:scale-105'}
+  bg-[#1a1f2e] dark:bg-gray-100 dark:text-black`}
+
+                >
+                  <div className="text-neon-green text-3xl mb-2">{item.icon}</div>
+                  <h2 className='font-bold text-lg text-white'>{item.title}</h2>
+                  <p className='text-gray-400'>{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+          >
+            <h2 className='text-xl font-semibold my-4'>Who do you plan to travel with on your next adventure?</h2>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
+              {SelectTravelsList.map((item, index) => (
+                <motion.div
+                  key={index}
+                  onClick={() => handleInputChange('traveler', item.people)}
+                  variants={fadeInUp}
+                  className={`p-5 border rounded-xl transition-all bg-[#1a1f2e] 
+                    ${formData?.traveler === item.people
+                      ? 'border-neon-cyan shadow-neon-pulse scale-105'
+                      : 'border-gray-600 hover:border-neon-pink hover:shadow-neon-pulse hover:scale-105'}`}
+
+                >
+                  <div className="text-neon-pink text-3xl mb-2">{item.icon}</div>
+                  <h2 className='font-bold text-lg text-white'>{item.title}</h2>
+                  <p className='text-gray-400'>{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div
+            className='text-right'
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+          >
+            <Button
+              disabled={loading}
+              className='my-10 bg-gradient-to-r from-neon-pink to-neon-green text-white px-6 py-2 rounded-full hover:shadow-neon-pulse transition-all'
+              onClick={onGenerateTrip}>
+
+              {
+                loading ? <AiOutlineLoading3Quarters className='h-7 w-7 animate-spin' /> : "Generate Trip"
+              }
+
+            </Button>
+
+          </motion.div>
+
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default TripForm;
