@@ -14,8 +14,7 @@ import {
 
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { Toaster } from "@/components/ui/sonner"
-
-
+import Viewtrip from './view-trip/[tripId]/index.jsx'
 
 
 
@@ -40,6 +39,14 @@ const router = createBrowserRouter([
     path: '/signup',
     element: <SignUpPage />,
   },
+
+  {
+    path:'/view-trip/:tripId',
+    element:<Viewtrip />
+  }
+
+
+
 ]);
 
 

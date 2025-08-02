@@ -5,22 +5,13 @@ import { AI_PROMPT, SelectBudgetOptions, SelectTravelsList } from '@/constants/o
 import { Button } from "../components/ui/custom/button";
 import { motion } from "framer-motion";
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
-import { FcGoogle } from "react-icons/fc";
-import axios from "axios";
 import { toast } from 'sonner';
 import { AiOutlineLoading3Quarters } from "react-icons/ai"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { useGoogleLogin } from '@react-oauth/google';
+
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/firebase.js';
+import { useNavigate} from 'react-router-dom';
 
 
 const fadeInUp = {
@@ -41,6 +32,9 @@ function TripForm() {
   const [opendialog, setOpenDialog] = useState();
 
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
   const handleInputChange = (name, value) => {
 
     setFormData({
@@ -57,78 +51,45 @@ function TripForm() {
 
 
 
-  const login = useGoogleLogin({
-    onSuccess: (codeResp) => getUserProfile(codeResp),
-    onError: (error) => console.log(error)
-  })
-
-  // const onGenerateTrip = async () => {
-
-  //   console.log("Generate Trip Clicked ✅");
-
-  //   const userId = localStorage.getItem("userId");
-
-  //   try {
-
-  //     if (!formData?.location || !formData.location?.label) {
-  //       toast("❌ Missing location");
-  //       return;
-  //     }
-
-  //     if (!formData?.noOfDays?.toString().trim()) {
-  //       toast("❌ Missing number of days");
-  //       return;
-  //     }
-
-
-  //     if (parseInt(formData?.noOfDays) > 14) {
-  //       toast("❌ Please enter travel days below 15");
-  //       return;
-  //     }
-
-  //     if (!formData?.budget || !formData?.budget?.toString().trim()) {
-  //       toast("❌ Missing budget");
-  //       return;
-  //     }
-
-  //     if (!formData?.traveler || !formData?.traveler?.toString().trim()) {
-  //       toast("❌ Missing traveler");
-  //       return;
-  //     }
-
-  //     toast("✅ Ready to go!");
-  //   } catch (err) {
-  //     console.error("🔥 Error in onGenerateTrip:", err);
-  //     toast("Something went wrong!");
-
-  //   }
-
-
-  //   setLoading(true);
-
-  //   const FINAL_PROMPT = AI_PROMPT
-  //     .replace('{location}', formData?.location?.label)
-  //     .replace('{totalDays}', formData?.noOfDays)
-  //     .replace('{traveler}', formData?.traveler)
-  //     .replace('{budget}', formData?.budget)
-  //     .replace('{totalDays}', formData?.noOfDays)
-
-  //   console.log(FINAL_PROMPT)
-
-  //   const result = await sendPromptToGemini(FINAL_PROMPT, userId);
-  //   if (result) {
-  //     console.log("🧾 Final Travel Plan:\n", result);
-  //     // You can optionally parse and display this in UI
-  //   }
-
-  //   setLoading(false);
-  //   SaveAITrip(result)
-
-  // }
-
   const onGenerateTrip = async () => {
   console.log("Generate Trip Clicked ✅");
-  setLoading(true);
+
+     try {
+
+      if (!formData?.location || !formData.location?.label) {
+        toast("❌ Missing location");
+        return;
+      }
+
+      if (!formData?.noOfDays?.toString().trim()) {
+        toast("❌ Missing number of days");
+        return;
+      }
+
+
+      if (parseInt(formData?.noOfDays) > 14) {
+        toast("❌ Please enter travel days below 15");
+        return;
+      }
+
+      if (!formData?.budget || !formData?.budget?.toString().trim()) {
+        toast("❌ Missing budget");
+        return;
+      }
+
+      if (!formData?.traveler || !formData?.traveler?.toString().trim()) {
+        toast("❌ Missing traveler");
+        return;
+      }
+
+      toast("✅ Ready to go!");
+      setLoading(true);
+
+    } catch (err) {
+      console.error("🔥 Error in onGenerateTrip:", err);
+      toast("Something went wrong!");
+
+    }
 
   const FINAL_PROMPT = AI_PROMPT
     .replace('{location}', formData?.location?.label)
@@ -208,6 +169,8 @@ const SaveAITrip = async (TripData) => {
 
   console.log("✅ Trip saved to Firebase successfully!");
   setLoading(false);
+
+  navigate(`/view-trip/${docId}`)
 };
 
 
