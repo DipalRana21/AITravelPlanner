@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import HotelCard from './HotelCard'
 
 const Hotels = ({trip}) => {
+
   return (
     <div>
         <h2 className='font-bold text-xl mt-5 mb-2'>Hotel Recommendation</h2>
@@ -14,6 +15,8 @@ const Hotels = ({trip}) => {
                 
             ))
             }
+
+
         </div>
     </div>
   )

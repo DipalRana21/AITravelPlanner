@@ -129,6 +129,7 @@ function TripForm() {
 };
 
 
+
 const SaveAITrip = async (TripData) => {
   setLoading(true);
 
@@ -172,6 +173,7 @@ const SaveAITrip = async (TripData) => {
 
   navigate(`/view-trip/${docId}`)
 };
+  
 
 
   return (
