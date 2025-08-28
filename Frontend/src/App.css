@@ -100,3 +100,27 @@ body {
     background-position: 0% 50%;
   }
 }
+@keyframes slow-rotate {
+  0% { transform: rotate(0deg) scale(1); }
+  100% { transform: rotate(360deg) scale(1.02); }
+}
+
+@keyframes slow-rotate-reverse {
+  0% { transform: rotate(360deg) scale(1); }
+  100% { transform: rotate(0deg) scale(1.02); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.1); }
+}
+
+.animate-slow-rotate {
+  animation: slow-rotate 80s linear infinite;
+}
+.animate-slow-rotate-reverse {
+  animation: slow-rotate-reverse 100s linear infinite;
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
