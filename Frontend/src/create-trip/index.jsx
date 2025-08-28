@@ -6,13 +6,11 @@ import { Button } from "../components/ui/custom/button";
 import { motion } from "framer-motion";
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import { toast } from 'sonner';
-import { AiOutlineLoading3Quarters } from "react-icons/ai"
-
-
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/firebase.js';
-import { useNavigate} from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom';
+import LoadingScreen from "../components/ui/custom/LoadingScreen.jsx";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -28,158 +26,129 @@ function TripForm() {
   });
 
   const [place, setPlace] = useState(false);
-
-  const [opendialog, setOpenDialog] = useState();
-
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
   const handleInputChange = (name, value) => {
-
     setFormData({
       ...formData,
       [name]: value
-    }
-
-    )
-  }
+    });
+  };
 
   useEffect(() => {
     console.log(formData);
-  }, [formData])
-
-
+  }, [formData]);
 
   const onGenerateTrip = async () => {
-  console.log("Generate Trip Clicked ✅");
+    console.log("Generate Trip Clicked ✅");
 
-     try {
-
-      if (!formData?.location || !formData.location?.label) {
-        toast("❌ Missing location");
-        return;
-      }
-
-      if (!formData?.noOfDays?.toString().trim()) {
-        toast("❌ Missing number of days");
-        return;
-      }
-
-
-      if (parseInt(formData?.noOfDays) > 14) {
-        toast("❌ Please enter travel days below 15");
-        return;
-      }
-
-      if (!formData?.budget || !formData?.budget?.toString().trim()) {
-        toast("❌ Missing budget");
-        return;
-      }
-
-      if (!formData?.traveler || !formData?.traveler?.toString().trim()) {
-        toast("❌ Missing traveler");
-        return;
-      }
-
-      toast("✅ Ready to go!");
-      setLoading(true);
-
-    } catch (err) {
-      console.error("🔥 Error in onGenerateTrip:", err);
-      toast("Something went wrong!");
-
+    // Validation
+    if (!formData?.location || !formData.location?.label) {
+      toast("❌ Missing location");
+      return;
+    }
+    if (!formData?.noOfDays?.toString().trim()) {
+      toast("❌ Missing number of days");
+      return;
+    }
+    if (parseInt(formData?.noOfDays) > 14) {
+      toast("❌ Please enter travel days below 15");
+      return;
+    }
+    if (!formData?.budget || !formData?.budget?.toString().trim()) {
+      toast("❌ Missing budget");
+      return;
+    }
+    if (!formData?.traveler || !formData?.traveler?.toString().trim()) {
+      toast("❌ Missing traveler");
+      return;
     }
 
-  const FINAL_PROMPT = AI_PROMPT
-    .replace('{location}', formData?.location?.label)
-    .replace('{totalDays}', formData?.noOfDays)
-    .replace('{traveler}', formData?.traveler)
-    .replace('{budget}', formData?.budget)
-    .replace('{totalDays}', formData?.noOfDays);
+    toast("✅ Ready to go!");
+    setLoading(true);
 
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${import.meta.env.VITE_GOOGLE_GEMINI_API_KEY}`;
-    const payload = {
-      contents: [{ role: "user", parts: [{ text: FINAL_PROMPT }] }]
-    };
+    const FINAL_PROMPT = AI_PROMPT
+      .replace('{location}', formData?.location?.label)
+      .replace('{totalDays}', formData?.noOfDays)
+      .replace('{traveler}', formData?.traveler)
+      .replace('{budget}', formData?.budget)
+      .replace('{totalDays}', formData?.noOfDays);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${import.meta.env.VITE_GOOGLE_GEMINI_API_KEY}`;
+      const payload = {
+        contents: [{ role: "user", parts: [{ text: FINAL_PROMPT }] }]
+      };
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      const resultText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      console.log("🧠 Gemini raw result:\n", resultText);
+
+      if (resultText) {
+        await SaveAITrip(resultText);
+      } else {
+        toast("❌ No trip generated");
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("❌ Gemini fetch failed:", err);
+      toast("Something went wrong!");
+      setLoading(false);
+    }
+  };
+
+  const SaveAITrip = async (TripData) => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.email) {
+      console.error("User not found in localStorage");
+      setLoading(false);
+      return;
+    }
+
+    const docId = Date.now().toString();
+    let parsedTrip;
+
+    try {
+      TripData = TripData.trim();
+      if (TripData.startsWith("```json") || TripData.startsWith("```")) {
+        TripData = TripData.replace(/```(?:json)?/, "").replace(/```$/, "").trim();
+      }
+      const safeJSON = TripData.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+      parsedTrip = JSON.parse(safeJSON);
+    } catch (err) {
+      console.error("❌ JSON Parse Error:", err.message);
+      toast("Invalid trip data received");
+      setLoading(false);
+      return;
+    }
+
+    await setDoc(doc(db, "Trips", docId), {
+      userChoice: formData,
+      tripData: parsedTrip,
+      userEmail: user.email,
+      id: docId,
+      createdAt: new Date(),
     });
 
-    const result = await response.json(); 
-    const resultText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    console.log("🧠 Gemini raw result:\n", resultText);
-
-    if (resultText) {
-      SaveAITrip(resultText);
-    } else {
-      console.error("❌ No result from Gemini");
-    }
-
-  } catch (err) {
-    console.error("❌ Gemini fetch failed:", err);
-  }
-
-  setLoading(false);
-};
-
-
-const SaveAITrip = async (TripData) => {
-  setLoading(true);
-
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (!user || !user.email) {
-    console.error("User not found in localStorage");
+    console.log("✅ Trip saved to Firebase successfully!");
     setLoading(false);
-    return;
-  }
-
-  const docId = Date.now().toString();
-
-  let parsedTrip;
-  try {
-    // Remove markdown if any
-    TripData = TripData.trim();
-    if (TripData.startsWith("```json") || TripData.startsWith("```")) {
-      TripData = TripData.replace(/```(?:json)?/, "").replace(/```$/, "").trim();
-    }
-
-    // Fix unquoted keys using regex (only if needed)
-    const safeJSON = TripData.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
-
-    parsedTrip = JSON.parse(safeJSON);
-  } catch (err) {
-    console.error("❌ JSON Parse Error:", err.message);
-    setLoading(false);
-    return;
-  }
-
-  await setDoc(doc(db, "Trips", docId), {
-    userChoice: formData,
-    tripData: parsedTrip,
-    userEmail: user.email,
-    id: docId,
-    createdAt: new Date(),
-  });
-
-  console.log("✅ Trip saved to Firebase successfully!");
-  setLoading(false);
-
-  navigate(`/view-trip/${docId}`)
-};
-
+    navigate(`/view-trip/${docId}`);
+  };
 
   return (
     <div className="bg-dark-bg dark:bg-white text-white dark:text-black min-h-screen">
+      {loading && <LoadingScreen text="SYNTHESIZING ITINERARY..."/>}
 
       <Header />
       <div className='sm:px-10 md:px-32 lg:px-56 xl:px-10 px-5 mt-10'>
-
         <motion.h2
           className='font-bold text-3xl text-neon-pink'
           initial="hidden"
@@ -201,7 +170,7 @@ const SaveAITrip = async (TripData) => {
         </motion.p>
 
         <div className='mt-16 flex flex-col gap-8'>
-
+          {/* Location */}
           <motion.div
             initial="hidden"
             whileInView="show"
@@ -209,8 +178,6 @@ const SaveAITrip = async (TripData) => {
             variants={fadeInUp}
           >
             <h2 className='text-xl font-semibold mb-2'>What is destination of choice?</h2>
-            {/* GooglePlacesAutocomplete goes here */}
-
             <GooglePlacesAutocomplete
               apiKey={import.meta.env.VITE_GOOGLE_PLACE_API_KEY}
               selectProps={{
@@ -224,7 +191,7 @@ const SaveAITrip = async (TripData) => {
                   control: (base) => ({
                     ...base,
                     backgroundColor: "#000",
-                    borderColor: "#2dd4bf", // neon cyan
+                    borderColor: "#2dd4bf",
                     color: "#67e8f9",
                     borderRadius: "0.375rem",
                     padding: "0.25rem",
@@ -232,14 +199,8 @@ const SaveAITrip = async (TripData) => {
                     boxShadow: "0 0 5px #0ff",
                     transition: "0.3s",
                   }),
-                  input: (base) => ({
-                    ...base,
-                    color: "#67e8f9",
-                  }),
-                  singleValue: (base) => ({
-                    ...base,
-                    color: "#67e8f9",
-                  }),
+                  input: (base) => ({ ...base, color: "#67e8f9" }),
+                  singleValue: (base) => ({ ...base, color: "#67e8f9" }),
                   menu: (base) => ({
                     ...base,
                     backgroundColor: "#0f172a",
@@ -258,11 +219,9 @@ const SaveAITrip = async (TripData) => {
                 },
               }}
             />
-
-
-
           </motion.div>
 
+          {/* Days */}
           <motion.div
             initial="hidden"
             whileInView="show"
@@ -274,6 +233,7 @@ const SaveAITrip = async (TripData) => {
               onChange={(e) => handleInputChange('noOfDays', e.target.value)} />
           </motion.div>
 
+          {/* Budget */}
           <motion.div
             initial="hidden"
             whileInView="show"
@@ -288,11 +248,10 @@ const SaveAITrip = async (TripData) => {
                   onClick={() => handleInputChange('budget', item.title)}
                   variants={fadeInUp}
                   className={`p-5 border rounded-xl transition-all
-  ${formData?.budget === item.title
+                    ${formData?.budget === item.title
                       ? 'border-neon-pink shadow-neon-pulse scale-105'
                       : 'border-gray-600 dark:border-gray-300 hover:border-neon-cyan hover:shadow-neon-pulse hover:scale-105'}
-  bg-[#1a1f2e] dark:bg-gray-100 dark:text-black`}
-
+                    bg-[#1a1f2e] dark:bg-gray-100 dark:text-black`}
                 >
                   <div className="text-neon-green text-3xl mb-2">{item.icon}</div>
                   <h2 className='font-bold text-lg text-white'>{item.title}</h2>
@@ -302,6 +261,7 @@ const SaveAITrip = async (TripData) => {
             </div>
           </motion.div>
 
+          {/* Traveler */}
           <motion.div
             initial="hidden"
             whileInView="show"
@@ -319,7 +279,6 @@ const SaveAITrip = async (TripData) => {
                     ${formData?.traveler === item.people
                       ? 'border-neon-cyan shadow-neon-pulse scale-105'
                       : 'border-gray-600 hover:border-neon-pink hover:shadow-neon-pulse hover:scale-105'}`}
-
                 >
                   <div className="text-neon-pink text-3xl mb-2">{item.icon}</div>
                   <h2 className='font-bold text-lg text-white'>{item.title}</h2>
@@ -329,6 +288,7 @@ const SaveAITrip = async (TripData) => {
             </div>
           </motion.div>
 
+          {/* Button */}
           <motion.div
             className='text-right'
             initial="hidden"
@@ -339,20 +299,17 @@ const SaveAITrip = async (TripData) => {
             <Button
               disabled={loading}
               className='my-10 bg-gradient-to-r from-neon-pink to-neon-green text-white px-6 py-2 rounded-full hover:shadow-neon-pulse transition-all'
-              onClick={onGenerateTrip}>
-
-              {
-                loading ? <AiOutlineLoading3Quarters className='h-7 w-7 animate-spin' /> : "Generate Trip"
-              }
-
+              onClick={onGenerateTrip}
+            >
+              {loading
+                ? <AiOutlineLoading3Quarters className='h-7 w-7 animate-spin' />
+                : "Generate Trip"}
             </Button>
-
           </motion.div>
-
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default TripForm;

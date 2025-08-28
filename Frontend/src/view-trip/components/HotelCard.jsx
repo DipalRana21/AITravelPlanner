@@ -1,60 +1,85 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
-const HotelCard = ({hotel}) => {
+const HotelCard = ({ hotel, isSelected, scrollSpeed }) => {
+  const [photoUrl, setPhotoUrl] = useState();
+  const [rotate, setRotate] = useState({ x: 0, y: 0 });
 
-     const [photoUrl,setPhotoUrl] = useState();
-    
-        useEffect(() => {
-            hotel && getPlacePhoto(hotel?.HotelName);
-        }, [hotel])
-    
-        const getPlacePhoto = async (textQuery) => {
-    
-            try {
-                const res= await axios.post('http://localhost:5000/api/places/search-place', {
-          textQuery,
-        });
-    
-        const place = res.data.places?.[0];
-    
-         if (!place || !place.photos || place.photos.length === 0) {
-          console.warn('No photos found for place.');
-          return;
-        }
-    
-        const photoRef= place.photos[3].name
-        const photoUrl = `http://localhost:5000/api/places/photo?name=${photoRef}`;
-    
-        setPhotoUrl(photoUrl);
-          console.log('✅ Generated Photo URL:', photoUrl);
-    
-            } catch (error) {
-                console.error('Backend place fetch failed:', error);
-       
-            }
-         
-          
-        }
+  useEffect(() => {
+    hotel && getPlacePhoto(hotel?.HotelName);
+  }, [hotel]);
 
+  const getPlacePhoto = async (textQuery) => {
+    try {
+      const res = await axios.post('http://localhost:5000/api/places/search-place', { textQuery });
+      const place = res.data.places?.[0];
+      if (!place?.photos?.length) return;
+      const photoRef = place.photos[3]?.name || place.photos[0]?.name;
+      setPhotoUrl(`http://localhost:5000/api/places/photo?name=${photoRef}`);
+    } catch (error) {
+      console.error('Backend place fetch failed:', error);
+    }
+  };
+
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 500], [0, scrollSpeed * 50]);
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 15;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -15;
+    setRotate({ x, y });
+  };
+
+  const handleMouseLeave = () => setRotate({ x: 0, y: 0 });
 
   return (
-    <Link to={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.HotelName}, ${hotel.HotelAddress}`)}` } target="_blank">
+    <Link
+      to={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        `${hotel.HotelName}, ${hotel.HotelAddress}`
+      )}`}
+      target="_blank"
+    >
+      <motion.div
+        style={{ y }}
+        animate={{
+          rotateX: rotate.y,
+          rotateY: rotate.x,
+          scale: isSelected ? 1.05 : 1,
+        }}
+        transition={{ type: 'spring', stiffness: 150, damping: 15 }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className={`relative rounded-2xl overflow-hidden border border-white/10 backdrop-blur-md bg-white/5 shadow-lg hover:shadow-pink-500/20 transition-all duration-500 ${
+          isSelected ? 'ring-2 ring-pink-400' : ''
+        }`}
+      >
+        {/* Image */}
+        <div className="relative">
+          <img
+            className="rounded-t-2xl h-[180px] w-full object-cover transition-transform duration-700 hover:scale-110"
+            src={
+              photoUrl ||
+              'https://plus.unsplash.com/premium_photo-1663076518116-0f0637626edf?q=80&w=1932&auto=format&fit=crop'
+            }
+            alt=""
+          />
+          {/* Glow overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        </div>
 
+        {/* Details */}
+        <div className="p-3 flex flex-col gap-2">
+          <h2 className="font-semibold text-cyan-400">{hotel?.HotelName}</h2>
+          <p className="text-xs text-gray-400">📍 {hotel?.HotelAddress}</p>
+          <p className="text-sm font-bold text-pink-400">💸 {hotel?.Price}</p>
+          <p className="text-sm text-yellow-400">⭐ {hotel?.Rating}</p>
+        </div>
+      </motion.div>
+    </Link>
+  );
+};
 
-                <div className='hover:scale-105 transition-all cursor-pointer'>
-                    <img className="rounded-xl h-[180px] w-full object-cover" src={ photoUrl ? photoUrl : "https://plus.unsplash.com/premium_photo-1663076518116-0f0637626edf?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"} alt="" />
-
-                    <div className='my-2 flex flex-col gap-2'>
-                        <h2 className='font-medium '>{hotel?.HotelName}</h2>
-                        <h2 className='text-xs text-gray-500'>📍{hotel?.HotelAddress}</h2>
-                        <h2 className='text-sm font-bold'>💸 {hotel?.Price} </h2>
-                        <h2 className='text-sm '>⭐{hotel?.Rating}</h2>
-                    </div>
-                </div>
-                </Link>
-  )
-}
-
-export default HotelCard
+export default HotelCard;

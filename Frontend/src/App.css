@@ -124,3 +124,18 @@ body {
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+@keyframes scanlines {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+.animate-scanlines {
+  background-size: 100% 4px;
+  animation: scanlines 0.2s linear infinite;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
