@@ -1,62 +1,111 @@
-import { Button } from '@/components/ui/custom/button'
+import { Button } from '@/components/ui/custom/button';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { FaMapLocationDot } from "react-icons/fa6";
 import { Link } from 'react-router-dom';
 
-const PlaceCard = ({place}) => {
+const PlaceCard = ({ place }) => {
+  const [photos, setPhotos] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-    const [photoUrl,setPhotoUrl] = useState();
-  
-      useEffect(() => {
-          place && getPlacePhoto(place.PlaceName);
-      }, [place])
-  
-      const getPlacePhoto = async (textQuery) => {
-  
-          try {
-              const res= await axios.post('http://localhost:5000/api/places/search-place', {
+  useEffect(() => {
+    place && getPlacePhotos(place.PlaceName);
+  }, [place]);
+
+  const getPlacePhotos = async (textQuery) => {
+    try {
+      const res = await axios.post('http://localhost:5000/api/places/search-place', {
         textQuery,
       });
-  
-      const place = res.data.places?.[0];
-  
-       if (!place || !place.photos || place.photos.length === 0) {
+
+      const foundPlace = res.data.places?.[0];
+      if (!foundPlace?.photos?.length) {
         console.warn('No photos found for place.');
         return;
       }
-  
-      const photoRef= place.photos[3].name
-      const photoUrl = `http://localhost:5000/api/places/photo?name=${photoRef}`;
-  
-      setPhotoUrl(photoUrl);
-        console.log('✅ Generated Photo URL:', photoUrl);
-  
-          } catch (error) {
-              console.error('Backend place fetch failed:', error);
-     
-          }
-       
-        
-      }
-  
+
+      const urls = foundPlace.photos.map(
+        (p) => `http://localhost:5000/api/places/photo?name=${p.name}`
+      );
+
+      setPhotos(urls);
+      console.log('✅ Generated Photo URLs:', urls);
+    } catch (error) {
+      console.error('Backend place fetch failed:', error);
+    }
+  };
+
+  // Auto carousel effect
+  useEffect(() => {
+    if (photos.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentIndex((prev) =>
+          prev === photos.length - 1 ? 0 : prev + 1
+        );
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [photos]);
 
   return (
+    <Link
+      to={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place.PlaceName}`)}`}
+      target="_blank"
+    >
+      <div className="flex gap-5 rounded-xl p-4 mt-3 bg-[#111827] border border-gray-700 hover:border-neon-cyan hover:shadow-neon-cyan/40 transition-all hover:scale-[1.02] cursor-pointer">
+        
+        {/* Carousel Container */}
+        <div className="relative w-[200px] h-[200px] rounded-xl overflow-hidden border border-gray-800">
+          <div
+            className="flex transition-transform duration-700 ease-in-out h-full w-full"
+            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          >
+            {(photos.length ? photos : [
+              "https://plus.unsplash.com/premium_photo-1663076518116-0f0637626edf?q=80&w=1932&auto=format&fit=crop"
+            ]).map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt=""
+                className="w-full h-full object-cover flex-shrink-0"
+              />
+            ))}
+          </div>
 
-    <Link to={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place.PlaceName}`)}` } target="_blank">
-    <div className=' flex gap-5 border rounded-xl p-3 mt-2 hover:scale-105 transition-all hover:shadow-md cursor-pointer '>
-           <img className="w-[130px] h-[130px] rounded-xl object-cover" src={ photoUrl ? photoUrl : "https://plus.unsplash.com/premium_photo-1663076518116-0f0637626edf?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"} alt="" />
+          {/* Dots */}
+          {photos.length > 1 && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              {photos.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentIndex(idx);
+                  }}
+                  className={`w-2 h-2 rounded-full ${
+                    idx === currentIndex ? 'bg-white' : 'bg-gray-400'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
-           <div>
-            <h2 className='font-bold text-lg'>{place.PlaceName}</h2>
-            <p className='text-sm text-gray-400'>{place.PlaceDetails}</p>
-            <h2 className='mt-2'>🕚{place.TimetoTravel}</h2>
-          
-
-           </div>
-    </div>
+        {/* Text Content */}
+        <div className="flex flex-col justify-between flex-1">
+          <div>
+            <h2 className="font-bold text-xl text-neon-cyan">{place.PlaceName}</h2>
+            <p className="text-base text-gray-400">{place.PlaceDetails}</p>
+            <h2 className="mt-3 text-neon-pink">🕚 {place.TimetoTravel}</h2>
+          </div>
+          <div className="mt-3 text-neon-green flex items-center gap-1">
+            <FaMapLocationDot />
+            <span className="text-sm">View on Map</span>
+          </div>
+        </div>
+      </div>
     </Link>
-  )
-}
+  );
+};
 
-export default PlaceCard
+export default PlaceCard;
