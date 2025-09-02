@@ -47,53 +47,49 @@ export default function SignInPage() {
   }
   };
 
-//  const handleGoogleLogin = useGoogleLogin({
-//   onSuccess: async (tokenResponse) => {
-//     try {
-  
-//       const googleRes = await axios.get(
-//         `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenResponse.access_token}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${tokenResponse.access_token}`,
-//             Accept: 'application/json',
-//           },
-//         }
-//       );
 
-//       const { email, name, id: googleId } = googleRes.data;
-
-//       // Send to your backend to register/login the user
-//       const backendRes = await axios.post(
-//         'http://localhost:5000/api/users/google', 
-//         { email, name, googleId },
-//         { withCredentials: true } 
-//       );
-
-//       // Save backend returned user to localStorage (optional)
-//       localStorage.setItem('user', JSON.stringify(backendRes.data.user));
-
-
-//       navigate('/');
-//     } catch (error) {
-//       console.error('Google login failed', error);
-//     }
-//   },
-//   onError: (error) => console.log('Google OAuth Error', error),
-// });
+// const handleGoogleLogin = async () => {
+//   const provider = new GoogleAuthProvider();
+//   try {
+//     const result = await signInWithPopup(auth, provider);
+//     const user = result.user;
+//     localStorage.setItem("user", JSON.stringify({
+//       uid: user.uid,
+//       email: user.email,
+//       displayName: user.displayName,
+//     }));
+//     navigate('/');
+//   } catch (error) {
+//     console.error("Firebase Google login failed:", error);
+//     alert(error.message);
+//   }
+// };
 
 
 const handleGoogleLogin = async () => {
   const provider = new GoogleAuthProvider();
+
+  //  Force Google to show account chooser every time
+  provider.setCustomParameters({
+    prompt: "select_account",
+  });
+
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
-    localStorage.setItem("user", JSON.stringify({
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-    }));
-    navigate('/');
+
+    // Save minimal user info in localStorage
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+      })
+    );
+
+    // Navigate after login
+    navigate("/");
   } catch (error) {
     console.error("Firebase Google login failed:", error);
     alert(error.message);
