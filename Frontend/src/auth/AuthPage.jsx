@@ -18,20 +18,7 @@ export default function SignInPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-//     try {
-//   await axios.post(
-//   'http://localhost:5000/api/users/login',
-//   formData,
-//   { withCredentials: true }
-// ).then((res) => {
-//   localStorage.setItem("user", JSON.stringify(res.data.user)); // ✅ Save full user object
-//   navigate('/');
-// });
 
- 
-//     } catch (error) {
-//       alert(error.response?.data?.message || 'Login failed');
-//     }
 
  try {
     const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
@@ -48,22 +35,6 @@ export default function SignInPage() {
   };
 
 
-// const handleGoogleLogin = async () => {
-//   const provider = new GoogleAuthProvider();
-//   try {
-//     const result = await signInWithPopup(auth, provider);
-//     const user = result.user;
-//     localStorage.setItem("user", JSON.stringify({
-//       uid: user.uid,
-//       email: user.email,
-//       displayName: user.displayName,
-//     }));
-//     navigate('/');
-//   } catch (error) {
-//     console.error("Firebase Google login failed:", error);
-//     alert(error.message);
-//   }
-// };
 
 
 const handleGoogleLogin = async () => {
