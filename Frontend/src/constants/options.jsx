@@ -1,5 +1,6 @@
 // src/constants/options.jsx
 import { FaUser, FaUsers, FaChild, FaWallet, FaBalanceScale, FaCrown } from "react-icons/fa";
+import { FaHiking, FaCampground, FaBookOpen, FaPalette, FaUtensils, FaCity, FaSpa, FaMountain } from 'react-icons/fa';
 
 export const SelectTravelsList = [
   {
@@ -231,3 +232,49 @@ STRICT RULES:
 - Activities must cover **the full span of the day (8:00 AM – 8:00 PM)** with realistic times.  
 - No vague durations like "half-day" or "explore city all day".  
 - Final output must be valid JSON only — no text, no markdown, no explanations.`;
+
+
+export const SelectPersonalityOptions = [
+  {
+    id: 1,
+    type: 'Adventurer',
+    title: 'Adventurer',
+    desc: 'Thrill-seeker, loves action, outdoors, and discovery.',
+    icon: <FaHiking />,
+  },
+  {
+    id: 2,
+    type: 'Relaxer',
+    title: 'Relaxer',
+    desc: 'Prefers comfort, leisure, spas, and tranquil settings.',
+    icon: <FaSpa />,
+  },
+  {
+    id: 3,
+    type: 'Cultural Explorer',
+    title: 'Cultural Explorer',
+    desc: 'Enjoys history, art, museums, and local traditions.',
+    icon: <FaBookOpen />,
+  },
+  {
+    id: 4,
+    type: 'Foodie',
+    title: 'Foodie',
+    desc: 'Travels for culinary experiences, local cuisine, and fine dining.',
+    icon: <FaUtensils />,
+  },
+  {
+    id: 5,
+    type: 'Urbanite',
+    title: 'Urbanite',
+    desc: 'Loves bustling cities, nightlife, shopping, and modern attractions.',
+    icon: <FaCity />,
+  },
+  {
+    id: 6,
+    type: 'Nature Lover',
+    title: 'Nature Lover',
+    desc: 'Seeks natural beauty, hiking, wildlife, and scenic landscapes.',
+    icon: <FaMountain />,
+  },
+];

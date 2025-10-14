@@ -105,6 +105,116 @@
 
 // export default Hotels;
 
+// imp current
+
+// import React, { useRef, useEffect, useState } from "react";
+// import { motion } from "framer-motion";
+// import axios from 'axios';
+// import HotelCard from "./HotelCard";
+
+// const Hotels = ({ trip }) => {
+//   const cardsRef = useRef([]);
+//   const [selectedIndex, setSelectedIndex] = useState(0);
+  
+//   // State for photos and loading status
+//   const [hotelPhotos, setHotelPhotos] = useState({});
+//   const [isLoading, setIsLoading] = useState(true);
+
+//   // --- START OF NEW DATA FETCHING LOGIC ---
+//   useEffect(() => {
+//     if (trip?.tripData?.hotels) {
+//       fetchAllHotelPhotos(trip.tripData.hotels);
+//     }
+//   }, [trip]);
+
+//   const fetchAllHotelPhotos = async (hotels) => {
+//     setIsLoading(true);
+
+//     // Helper to fetch a single photo, moved from HotelCard
+//     const getPhotoForHotel = async (hotel) => {
+//       try {
+//         const res = await axios.post('http://localhost:5000/api/places/search-place', { textQuery: hotel.HotelName });
+//         const place = res.data.places?.[0];
+//         if (!place?.photos?.length) return null;
+//         const photoRef = place.photos[3]?.name || place.photos[0]?.name;
+//         return `http://localhost:5000/api/places/photo?name=${photoRef}`;
+//       } catch (error) {
+//         console.error(`Failed to fetch photo for ${hotel.HotelName}:`, error);
+//         return null; // Return null on error
+//       }
+//     };
+
+//     // Create an array of promises for all hotel photos
+//     const photoPromises = hotels.map(hotel => getPhotoForHotel(hotel));
+
+//     // Wait for all API calls to complete in parallel
+//     const resolvedUrls = await Promise.all(photoPromises);
+
+//     // Map hotel names to their fetched URLs
+//     const photosMap = hotels.reduce((acc, hotel, index) => {
+//       if (resolvedUrls[index]) {
+//         acc[hotel.HotelName] = resolvedUrls[index];
+//       }
+//       return acc;
+//     }, {});
+
+//     setHotelPhotos(photosMap);
+//     setIsLoading(false);
+//   };
+//   // --- END OF NEW DATA FETCHING LOGIC ---
+
+//   useEffect(() => {
+//     // (Your existing keyboard navigation useEffect remains unchanged)
+//   }, [trip]);
+
+//   useEffect(() => {
+//     // (Your existing auto-scroll useEffect remains unchanged)
+//   }, [selectedIndex]);
+
+//   const hotels = trip?.tripData?.hotels || [];
+
+//   return (
+//     <div className="relative">
+//       <motion.h2 /* (Heading is unchanged) */ >
+//         ✨ Hotel Recommendations
+//       </motion.h2>
+
+//       <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-6 no-scrollbar">
+//         {isLoading ? (
+//           // Skeleton Loader while images are fetching
+//           [...Array(4)].map((_, index) => (
+//             <div key={index} className="snap-center flex-shrink-0 w-[280px] h-[325px] bg-white/5 rounded-2xl animate-pulse"></div>
+//           ))
+//         ) : (
+//           // Render cards once photos are loaded
+//           hotels.map((hotel, index) => (
+//             <motion.div
+//               key={index}
+//               ref={(el) => (cardsRef.current[index] = el)}
+//               className="snap-center flex-shrink-0 w-[280px]"
+//               initial={{ opacity: 0, scale: 0.9 }}
+//               animate={{ opacity: 1, scale: 1 }}
+//               transition={{ duration: 0.3, delay: index * 0.1 }}
+//             >
+//               <HotelCard
+//                 hotel={hotel}
+//                 isSelected={selectedIndex === index}
+//                 scrollSpeed={0.05 * index}
+//                 photoUrl={hotelPhotos[hotel.HotelName]} // <-- Pass the fetched URL as a prop
+//               />
+//             </motion.div>
+//           ))
+//         )}
+//       </div>
+      
+//       {/* (Navigation arrows are unchanged) */}
+//     </div>
+//   );
+// };
+
+// export default Hotels;
+
+
 import React, { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from 'axios';
@@ -113,12 +223,9 @@ import HotelCard from "./HotelCard";
 const Hotels = ({ trip }) => {
   const cardsRef = useRef([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  
-  // State for photos and loading status
   const [hotelPhotos, setHotelPhotos] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- START OF NEW DATA FETCHING LOGIC ---
   useEffect(() => {
     if (trip?.tripData?.hotels) {
       fetchAllHotelPhotos(trip.tripData.hotels);
@@ -127,8 +234,6 @@ const Hotels = ({ trip }) => {
 
   const fetchAllHotelPhotos = async (hotels) => {
     setIsLoading(true);
-
-    // Helper to fetch a single photo, moved from HotelCard
     const getPhotoForHotel = async (hotel) => {
       try {
         const res = await axios.post('http://localhost:5000/api/places/search-place', { textQuery: hotel.HotelName });
@@ -138,53 +243,39 @@ const Hotels = ({ trip }) => {
         return `http://localhost:5000/api/places/photo?name=${photoRef}`;
       } catch (error) {
         console.error(`Failed to fetch photo for ${hotel.HotelName}:`, error);
-        return null; // Return null on error
+        return null;
       }
     };
 
-    // Create an array of promises for all hotel photos
     const photoPromises = hotels.map(hotel => getPhotoForHotel(hotel));
-
-    // Wait for all API calls to complete in parallel
     const resolvedUrls = await Promise.all(photoPromises);
-
-    // Map hotel names to their fetched URLs
     const photosMap = hotels.reduce((acc, hotel, index) => {
       if (resolvedUrls[index]) {
         acc[hotel.HotelName] = resolvedUrls[index];
       }
       return acc;
     }, {});
-
     setHotelPhotos(photosMap);
     setIsLoading(false);
   };
-  // --- END OF NEW DATA FETCHING LOGIC ---
 
-  useEffect(() => {
-    // (Your existing keyboard navigation useEffect remains unchanged)
-  }, [trip]);
-
-  useEffect(() => {
-    // (Your existing auto-scroll useEffect remains unchanged)
-  }, [selectedIndex]);
+  // Your keyboard navigation and auto-scroll useEffects can remain unchanged
 
   const hotels = trip?.tripData?.hotels || [];
 
   return (
     <div className="relative">
-      <motion.h2 /* (Heading is unchanged) */ >
+      <motion.h2 className="font-bold text-2xl mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-400">
         ✨ Hotel Recommendations
       </motion.h2>
 
-      <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-6 no-scrollbar">
+      {/* --- THIS IS THE UPDATED LINE --- */}
+      <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory p-4 no-scrollbar">
         {isLoading ? (
-          // Skeleton Loader while images are fetching
           [...Array(4)].map((_, index) => (
             <div key={index} className="snap-center flex-shrink-0 w-[280px] h-[325px] bg-white/5 rounded-2xl animate-pulse"></div>
           ))
         ) : (
-          // Render cards once photos are loaded
           hotels.map((hotel, index) => (
             <motion.div
               key={index}
@@ -197,15 +288,14 @@ const Hotels = ({ trip }) => {
               <HotelCard
                 hotel={hotel}
                 isSelected={selectedIndex === index}
-                scrollSpeed={0.05 * index}
-                photoUrl={hotelPhotos[hotel.HotelName]} // <-- Pass the fetched URL as a prop
+                photoUrl={hotelPhotos[hotel.HotelName]}
               />
             </motion.div>
           ))
         )}
       </div>
       
-      {/* (Navigation arrows are unchanged) */}
+      {/* (Your navigation arrows remain unchanged) */}
     </div>
   );
 };
