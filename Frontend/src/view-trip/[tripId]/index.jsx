@@ -84,11 +84,11 @@
 // export default Viewtrip;
 
 
-
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import InfoSection from '../components/InfoSection';
 import Hotels from '../components/Hotels';
@@ -98,14 +98,43 @@ import Footer from '../components/Footer';
 import { motion } from 'framer-motion';
 import Header from '@/components/ui/custom/Header';
 import Events from '../components/Events';
+import { Button } from '@/components/ui/custom/button';
 
 const Viewtrip = () => {
   const { tripId } = useParams();
   const [trip, setTrip] = useState();
 
+  const [existingBooking, setExistingBooking] = useState(null);
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+
+
   useEffect(() => {
     tripId && getTripData();
   }, [tripId]);
+
+
+  useEffect(() => {
+    const checkBooking = async () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user || !tripId) return;
+
+      const q = query(
+        collection(db, "Bookings"),
+        where("userId", "==", user.uid),
+        where("tripId", "==", tripId)
+      );
+
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        setExistingBooking(snap.docs[0].data());
+      }
+    };
+
+    checkBooking();
+  }, [tripId]);
+
 
   const getTripData = async () => {
     const docRef = doc(db, 'Trips', tripId);
@@ -123,7 +152,7 @@ const Viewtrip = () => {
   return (
 
     <div className="bg-[#0e1421] dark:bg-[#0f172a]">
-      <Header /> 
+      <Header />
 
       <div className="relative min-h-screen font-exo text-gray-100 overflow-hidden">
         {/* Background gradient layers */}
@@ -152,9 +181,34 @@ const Viewtrip = () => {
             <Hotels trip={trip} />
           </section>
 
+
+
           {/* Places to Visit Section */}
           <section className="mb-20 backdrop-blur-md bg-white/5 rounded-2xl p-6 shadow-lg shadow-black/30 border border-white/10">
             <PlacesToVisit trip={trip} />
+          </section>
+
+ 
+          <section className="mb-12 text-center">
+            {existingBooking ? (
+              <Link to="/my-trip">
+                <Button
+                  size="lg"
+                  className="rounded-full px-10 py-6 text-lg bg-neon-cyan text-black font-bold shadow-lg hover:shadow-neon-pulse transition-all duration-300 transform hover:scale-105"
+                >
+                  View Your Booking
+                </Button>
+              </Link>
+            ) : (
+              <Link to={`/view-trip/${tripId}/book`}>
+                <Button
+                  size="lg"
+                  className="rounded-full px-10 py-6 text-lg bg-gradient-to-r from-neon-pink to-neon-green text-white font-bold shadow-lg hover:shadow-neon-pulse transition-all duration-300 transform hover:scale-105"
+                >
+                  Proceed to Book Your Trip
+                </Button>
+              </Link>
+            )}
           </section>
 
           {/* Footer */}

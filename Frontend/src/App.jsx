@@ -9,13 +9,14 @@ import Header from './components/ui/custom/Header';
 import AuthPage from './auth/AuthPage';
 import Home from './Home';
 
+
 function App() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 3000); // 3s splash
     return () => clearTimeout(timer);
-  }, []);
+  }, []); 
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
@@ -23,12 +24,13 @@ function App() {
         <SplashScreen />
       ) : (
         <>
-          <Header />
+       <Header /> 
           <Routes>
-            <Route path="/" element={<Home />} />
+             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<AuthPage />} />
-      
+
           </Routes>
+
         </>
       )}
     </div>

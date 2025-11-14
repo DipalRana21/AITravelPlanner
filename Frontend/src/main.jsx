@@ -16,7 +16,9 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import { Toaster } from "@/components/ui/sonner"
 import Viewtrip from './view-trip/[tripId]/index.jsx'
 import MyTrips from './my-trips'
-import Header from './components/ui/custom/Header'
+import BookingConfirmation from './view-trip/components/BookingConfirmation'
+import Booking from './view-trip/components/Booking'
+import MyBookings from './view-trip/components/MyBookings'
 
 
 
@@ -50,6 +52,21 @@ const router = createBrowserRouter([
   {
      path:"/my-trips",
     element:<MyTrips />
+  },
+
+  {
+    path:"//view-trip/:tripId/book",
+    element:<Booking />
+  },
+
+  {
+    path:"//booking-confirmation/:bookingId",
+    element:<BookingConfirmation />
+  },
+
+  {
+    path:"/my-trip",
+    element:<MyBookings />
   }
 
 ]);

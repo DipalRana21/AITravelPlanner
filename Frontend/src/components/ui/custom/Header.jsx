@@ -116,13 +116,7 @@ export default function Header() {
       {/* Left side: Logo and Theme Toggle */}
       <div className="flex items-center gap-4">
         <img src={TripMindSVG} alt="Logo" className="h-10 w-auto" />
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-full border border-white dark:border-black bg-black dark:bg-white text-white dark:text-black hover:scale-110 transition"
-          title="Toggle Theme"
-        >
-          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
+       
       </div>
 
       {/* Right side: Actions */}
